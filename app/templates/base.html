@@ -1,0 +1,19 @@
+<html>
+	<head>
+
+		{% if title %}
+		<title> {{title}} </title>
+		{% else %}
+		<title> second {{title}} </title>
+		{% endif %}
+
+	</head>
+
+	<body>
+		
+		<h1>Hello, {{ user.name }} </h1>
+		{% block base_content %} {% endblock %}
+
+	</body>
+
+</html>
