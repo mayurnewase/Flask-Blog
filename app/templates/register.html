@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block base_content %}
+
+
+<h4> register here </h4>
+
+<form action = "" method="post" novalidate>
+
+	{{ form.hidden_tag() }}
+
+	<p>
+		{{ form.name.label }}<br>
+		{{ form.name(size= 32) }} <br>
+		{% for error in form.name.errors %}
+		<span style = "color: red;"> [{{ error }}] </span>
+		{% endfor %}
+	</p>
+
+	<p>
+		{{ form.mail.label }}<br>
+		{{ form.mail(size=32) }}<br>
+		{% for error in form.mail.errors %}
+		<span style="color: red;"> [{{ error }}] </span>
+		{% endfor %}
+	</p>
+
+
+	<p>
+		{{ form.password1.label }}<br>
+		{{ form.password1(size=32) }}<br>
+		{% for error in form.password1.errors %}
+		<span style="color: red;"> [{{ error }}] </span>
+		{% endfor %}
+	</p>
+
+	<p>
+		{{ form.password2.label }}<br>
+		{{ form.password2(size=32) }}<br>
+		{% for error in form.password2.errors %}
+		<span style="color: red;"> [{{ error }}] </span>
+		{% endfor %}
+	</p>
+
+	<p>{{ form.submit }}</p>
+	
+</form>
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
