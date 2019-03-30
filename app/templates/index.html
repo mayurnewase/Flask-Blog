@@ -3,7 +3,7 @@
 
 	<h3>Hi {{ current_user.name }}</h3>
 	{% for post in posts %}
-	<div><p> {{ post.author.name }} says : <b> {{ post.body }} </b></p></div>
+	<div> {% include "_post.html" %} </b></p></div>
 	{% endfor %}
 
 {% endblock %}

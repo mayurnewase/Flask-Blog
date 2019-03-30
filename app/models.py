@@ -11,6 +11,8 @@ class User(UserMixin, db.Model):
 	name = db.Column(db.String(64), index = True, unique = True)
 	mail = db.Column(db.String(120), index = True)
 	password_hash = db.Column(db.String(128))
+	about_me = db.Column(db.String(140))
+	last_seen = db.Column(db.DateTime, default = datetime.utcnow)
 
 	#he backref argument defines the name of a field that will be added to the objects of the "many" class that points back at the "one" object.
 	posts = db.relationship("Post", backref = "author", lazy="dynamic")  #Post is following table -> this is not field in user table -> just a link

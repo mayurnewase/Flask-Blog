@@ -13,7 +13,7 @@ migrate = Migrate(app_instance, db)
 
 #login need 4 mandatory functions in user model
 #is_authenticated, is_active, is_anonymous, get_id
-#but UserMixin can be used
+#but UserMixin can be used so no need to use above functions
 login = LoginManager(app_instance)
 login.login_view = "login" #to force user go to "/login" if not already logged in. -> Use @loggin_required to protect index function.
 
@@ -28,6 +28,11 @@ To add form
 4.link to hit that url
 """
 
-
+"""
+flask env vars
+FLASK_ENV=developement
+FLASK_APP=blog.py
+FLASK_DEBUG=1
+"""
 
 

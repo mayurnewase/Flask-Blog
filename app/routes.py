@@ -1,9 +1,10 @@
 from app import app_instance as api
-from flask import render_template, flash, redirect, url_for
-from app.forms import LoginForm, RegisterForm
+from flask import render_template, flash, redirect, url_for, request
+from app.forms import LoginForm, RegisterForm, EditProfile
 from flask_login import current_user, login_user, logout_user, login_required  #manage sessions for user
 from app.models import User
 from app import db
+from datetime import datetime
 
 @api.route("/")
 @api.route("/index")
@@ -12,9 +13,10 @@ def index():					#need to inspect next parameter in login(), as hacker can put p
 	
 	#user = {"name" : "lola"}  #not required as index.html take it from db
 
+	#read all posts from db
 	posts = [
-	{"author" : {"name" : "lola_author"}, "body" : "lola wrote a book"},
-	{"author" : {"name" : "lola_second_author"}, "body" : "aother book"}
+	{"author" :  "lola_author", "body" : "lola wrote a book"},
+	{"author" :  "lola_second_author", "body" : "aother book"}
 	]
 
 	return render_template("index.html", title = "Home", posts = posts)
@@ -58,9 +60,7 @@ def register():
 		return redirect(url_for("index"))
 
 	form = RegisterForm()
-	print("------INSIDE FORM VIEW FUNCTION-----------")
 	if form.validate_on_submit():
-		print("----INSIDE VALIDATED FORM------")
 		user = User(name=form.name.data, mail=form.mail.data)
 		user.set_password(form.password1.data)
 
@@ -72,6 +72,51 @@ def register():
 		return redirect(url_for("login"))
 
 	return render_template("/register.html", form = form)
+
+
+@api.route("/user/<name>")
+@login_required
+def user(name):
+	user = User.query.filter_by(name= name).first_or_404()
+
+	posts = [
+	{"author" :  name, "body" : "lola wrote a book"},
+	{"author" :  name, "body" : "aother book"}
+	]
+	print("giving user template ", name)
+	return render_template("user.html", user = user, posts = posts)
+
+
+@api.before_request
+def before_request():
+	#flask call this for every client request and before serving that request.
+	if current_user.is_authenticated:
+		current_user.last_seen = datetime.utcnow()
+		db.session.commit()	  #no need to db.session.add(u) coz current_user runs user_loader which put user in db session
+
+@api.route("/edit_profile", methods = ["POST", "GET"])
+def edit_profile():
+
+	form = EditProfile()
+
+	if form.validate_on_submit():
+		print("---USER SENT FORM WITH ", request.method)
+		current_user.name = form.name.data
+		current_user.about_me = form.about_me.data
+		db.session.commit()
+		flash("changes commited in db")
+
+		return redirect(url_for("user", name = current_user.name))
+
+	#how to prefill data in form so user will see old data and modify it,using GET request
+	#coz when server gives web page to user it use get request.
+	if request.method == "GET":
+		form.name.data = current_user.name
+		form.about_me.data = current_user.about_me
+
+
+	return render_template("edit_profile.html", form = form)
+
 
 
 
