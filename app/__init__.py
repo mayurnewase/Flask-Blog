@@ -17,7 +17,7 @@ migrate = Migrate(app_instance, db)
 login = LoginManager(app_instance)
 login.login_view = "login" #to force user go to "/login" if not already logged in. -> Use @loggin_required to protect index function.
 
-from app import routes, models
+from app import routes, models, errors
 
 
 """
