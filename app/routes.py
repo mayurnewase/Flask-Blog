@@ -1,26 +1,35 @@
 from app import app_instance as api
 from flask import render_template, flash, redirect, url_for, request
-from app.forms import LoginForm, RegisterForm, EditProfile, ResetPassword
+from app.forms import LoginForm, RegisterForm, EditProfile, ResetPassword, PostForm
 from flask_login import current_user, login_user, logout_user, login_required  #manage sessions for user
-from app.models import User
+from app.models import User, Post
 from app import db
 from datetime import datetime
 from app.email import send_password_request
 
 @api.route("/")
-@api.route("/index")
+@api.route("/index", methods = ["GET", "POST"])
 @login_required              #protect this function -> also adds ?next parameter in url to remember where to go next after logged in
 def index():					#need to inspect next parameter in login(), as hacker can put protected page address in next and it will redirect there.
 	
 	#user = {"name" : "lola"}  #not required as index.html take it from db
 
-	#read all posts from db
-	posts = [
-	{"author" :  "lola_author", "body" : "lola wrote a book"},
-	{"author" :  "lola_second_author", "body" : "aother book"}
-	]
+	#form to accept post from user
+	form = PostForm()
+	if form.validate_on_submit():
+		post = Post(body= form.post.data, author = current_user)  #author is backref from user to post
+		db.session.add(post)
+		db.session.commit()
+		print("=========post submitted===========")
+		flash("Post submitted")
+		return redirect(url_for("index"))     	#why redirect here, why not stay here only as index is already rendered? 
+												#-> because for form submission POST request always send a web page response so if user refresh browser doesn't send same POST request to submit form.
 
-	return render_template("index.html", title = "Home", posts = posts)
+	#read all posts from db
+	
+	posts = current_user.getAllPosts()
+
+	return render_template("index.html", title = "Home", posts = posts, form=form)
 
 
 @api.route("/login", methods = ["POST", "GET"])
@@ -80,10 +89,8 @@ def register():
 def user(name):
 	user = User.query.filter_by(name= name).first_or_404()
 
-	posts = [
-	{"author" :  name, "body" : "lola wrote a book"},
-	{"author" :  name, "body" : "aother book"}
-	]
+	#dont get all posts get only posts for this user
+	posts = user.posts.order_by(Post.timestamp.desc()) #possible coz of db.relationship of User and Post
 	print("giving user template ", name)
 	return render_template("user.html", user = user, posts = posts)
 

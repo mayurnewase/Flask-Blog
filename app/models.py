@@ -24,6 +24,11 @@ class User(UserMixin, db.Model):
 		#helper for hashing
 		return check_password_hash(self.password_hash, password)
 
+	def getAllPosts(self):
+		#can be used to get specific posts but for now return all posts from db
+		posts = Post.query.all()
+		return posts
+
 class Post(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	body = db.Column(db.String(140))
