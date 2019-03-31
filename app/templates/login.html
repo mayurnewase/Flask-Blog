@@ -1,34 +1,17 @@
 {% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}  <!-- for bootstrap form  -->
+
 {% block base_content %}
 
 <h4>Enter your data</h4>
 
-<form action = "" method="post" novalidate>
-	{{ form.hidden_tag() }}   <!-- protect from CSRF attack on form.We just need this tag and secret key in flask config -->
+<div class="row">
+	<div class="col-md-4">
+		{{ wtf.quick_form(form) }}
+	</div>
+</div>
 
-	<p>
-		{{ form.name.label }} <br>
-		{{ form.name(size = 32) }} <br>
-		{% for error in form.name.errors %}
-		<span style="color: red;">[{{ error }}] </span>
-		{% endfor %}
-	</p>
-
-	<p>
-		{{ form.password.label }} <br>
-		{{ form.password(size = 32) }} <br>
-		{% for error in form.password.errors %}
-		<span style="color: red;">[{{ error }}] </span>
-		{% endfor %}
-	</p>
-
-	<p>
-		{{ form.remember() }} {{ form.remember.label }} 
-	</p>
-
-	<p>{{ form.submit() }}</p>
-
-</form>
+<p>Reset Password <a href="{{ url_for('reset_password') }}">Click</a>
 
 <p> New ? <a href="{{ url_for('register') }}"> Click here </a></p>
 

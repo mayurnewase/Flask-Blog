@@ -1,10 +1,11 @@
 from app import app_instance as api
 from flask import render_template, flash, redirect, url_for, request
-from app.forms import LoginForm, RegisterForm, EditProfile
+from app.forms import LoginForm, RegisterForm, EditProfile, ResetPassword
 from flask_login import current_user, login_user, logout_user, login_required  #manage sessions for user
 from app.models import User
 from app import db
 from datetime import datetime
+from app.email import send_password_request
 
 @api.route("/")
 @api.route("/index")
@@ -118,7 +119,26 @@ def edit_profile():
 	return render_template("edit_profile.html", form = form)
 
 
+@api.route("/reset_password", methods = ["POST", "GET"])
+def reset_password():
 
+	if current_user.is_authenticated:
+		return redirect(url_for("index"))
+
+	form = ResetPassword()
+
+	if form.validate_on_submit():
+		user = User.query.filter_by(mail = form.mail.data).first()
+
+		if user:
+			send_password_request(user)
+			flash("Request sent check your mail")
+			return redirect(url_for("login"))
+		else:
+			flash("User not found")
+			return redirect(url_for("login"))
+
+	return render_template("reset_password.html", form = form)
 
 
 

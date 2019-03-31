@@ -1,4 +1,4 @@
-from app import app_instance, db
+from app import app_instance, db, mail
 from app.models import User, Post
 
 
@@ -6,5 +6,5 @@ from app.models import User, Post
 #now if flask shell is used those will be preimported ...
 @app_instance.shell_context_processor
 def make_shell_context():
-	return {"db": db, "User": User, "Post": Post}
+	return {"db": db, "User": User, "Post": Post, "mail":mail}
 
