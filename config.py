@@ -9,7 +9,6 @@ class Config(object):
 
 	MAIL_SERVER="localhost"
 	MAIL_PORT=8025
-
 	#MAIL_SERVER = os.environ.get('MAIL_SERVER')
 	#MAIL_PORT = int(os.environ.get('MAIL_PORT') or 25)
 	MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS') is not None
@@ -18,6 +17,9 @@ class Config(object):
 	ADMINS = ['admin@gmail.com']
 
 	"""
+	to start local server
+	python -m smtpd -n -c DebuggingServer localhost:8025
+
 	for google
 	(venv) $ export MAIL_SERVER=smtp.googlemail.com
 	(venv) $ export MAIL_PORT=587

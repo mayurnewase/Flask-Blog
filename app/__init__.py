@@ -21,8 +21,17 @@ bootstrap = Bootstrap(app_instance)  #now booststrap/base.html is available to u
 login = LoginManager(app_instance)
 login.login_view = "login" #to force user go to "/login" if not already logged in. -> Use @loggin_required to protect index function.
 
+#Blueprints
+
 from app.errors import errors_bp
 app_instance.register_blueprint(errors_bp)   #connects view function, templates, static files, error handlers to flask app
+
+from app.authentication import auth_bp
+app_instance.register_blueprint(auth_bp, url_prefix = "/auth") 
+#prefix for seperating view functions
+#http://127.0.0.1:5000/login   =>  http://127.0.0.1:5000/auth/login
+#optional
+#we are using url_for() to call view functions of this blueprint (like auth.login),prefix is appended automatically
 
 from app import routes, models
 
@@ -57,9 +66,20 @@ Organize with Blueprints
 	            500.html
 	    __init__.py                         <-- blueprint registration
 
+2.Authentication blueprint
 
-
-
+	app/
+		auth/
+			__init__py                 <--create bp
+			email.py
+			routes.py
+			forms.py
+		templates/
+			auth/
+				login.html
+				register.html
+				reset_password.html
+		__init__.py                    <-- register bp
 """
 
 
