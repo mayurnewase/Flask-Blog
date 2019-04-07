@@ -8,34 +8,48 @@ from flask_mail import Mail
 from flask_bootstrap import Bootstrap
 
 
-app_instance = Flask(__name__)
-app_instance.config.from_object(Config)
-db = SQLAlchemy(app_instance)
-migrate = Migrate(app_instance, db)
-mail = Mail(app_instance)
-bootstrap = Bootstrap(app_instance)  #now booststrap/base.html is available to use.so base.html can use it
-
+#initialize empty flask extensions and initialize after app is made
+db = SQLAlchemy()  #take app_instance
+migrate = Migrate() #take app_instance,db
+mail = Mail()   #take app_instance
+bootstrap = Bootstrap()  #now booststrap/base.html is available to use.so base.html can use it
+									#take app_instance
 #login need 4 mandatory functions in user model
 #is_authenticated, is_active, is_anonymous, get_id
 #but UserMixin can be used so no need to use above functions
-login = LoginManager(app_instance)
-login.login_view = "auth.login" #to force user go to "/login" if not already logged in. -> Use @loggin_required to protect index function.
+login = LoginManager() #takes app_instance
 
-#Blueprints
+def create_app(config_class = Config):
+	#Application factory function now can take config class
+	#Used to create app for various configurations(loke dev and testing configs)
 
-from app.errors import errors_bp
-app_instance.register_blueprint(errors_bp)   #connects view function, templates, static files, error handlers to flask app
+	app_instance = Flask(__name__)
+	app_instance.config.from_object(config_class)
+	
+	db.init_app(app_instance)
+	migrate.init_app(app_instance, db)
+	mail.init_app(app_instance)
+	bootstrap.init_app(app_instance)
+	login.init_app(app_instance)
 
-from app.authentication import auth_bp
-app_instance.register_blueprint(auth_bp, url_prefix = "/auth") 
-#prefix for seperating view functions
-#http://127.0.0.1:5000/login   =>  http://127.0.0.1:5000/auth/login
-#optional
-#we are using url_for() to call view functions of this blueprint (like auth.login),prefix is appended automatically
+	login.login_view = "auth.login" #to force user go to "/login" if not already logged in. -> Use @loggin_required to protect index function.
 
-from app.main import main_bp
-app_instance.register_blueprint(main_bp, url_prefix = "/main")
+	#Blueprints
 
+	from app.errors import errors_bp
+	app_instance.register_blueprint(errors_bp)   #connects view function, templates, static files, error handlers to flask app
+
+	from app.authentication import auth_bp
+	app_instance.register_blueprint(auth_bp, url_prefix = "/auth") 
+	#prefix for seperating view functions
+	#http://127.0.0.1:5000/login   =>  http://127.0.0.1:5000/auth/login
+	#optional
+	#we are using url_for() to call view functions of this blueprint (like auth.login),prefix is appended automatically
+
+	from app.main import main_bp
+	app_instance.register_blueprint(main_bp, url_prefix = "/main")
+
+	return app_instance
 
 from app import models
 
@@ -55,6 +69,18 @@ FLASK_APP=blog.py
 FLASK_DEBUG=1
 """
 
+"""
+contexts variables and methods:
+	applicaion context:
+		current_app
+		g
+		to push it manually -> app_instance.app_context().push()
+	request context:
+		current_user
+		request
+		session
+
+"""
 
 """
 Organize with Blueprints

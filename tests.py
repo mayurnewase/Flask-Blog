@@ -1,18 +1,35 @@
 import unittest
-from app import app_instance as app, db
+from app import db
 from app.models import User,Post
+from config import Config
+from app import create_app
 
-
+class TestConfig(Config):
+	SQLALCHEMY_DATABASE_URI = "sqlite://"
 
 class UserModelCase(unittest.TestCase):
 	def setUp(self):
-		app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test.db"
-		db.create_all()
+		self.app = create_app(TestConfig)
+
+		#now push app context why,
+		#because imported db instance is empty,
+		#it needs app_instance to use db_uri from app.config
+		#so now app_instance is not available as global variable,
+		#so how does it automatically know which app_instance to use?
+		#from application context -> current_app -> proxy for app_instance
+		#current_app looks for active application context in current_thread,which was pushed by flask
+		
+		self.app_context = self.app.app_context()
+		self.app_context.push()
+		#now application context and current_app is available
+		
+		db.create_all()   #create table
 
 
 	def tearDown(self):
 		db.session.remove()
 		db.drop_all()
+		self.app_context.pop()
 
 	def test_password_hashing(self):
 		u1 = User(name = "mia")

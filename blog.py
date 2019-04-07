@@ -1,6 +1,8 @@
-from app import app_instance, db, mail
+from app import db, mail
 from app.models import User, Post
+from app import create_app       #application factory
 
+app_instance = create_app()
 
 #when using python shell we need to import db, User, Post from app towork on database
 #now if flask shell is used those will be preimported ...
