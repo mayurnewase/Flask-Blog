@@ -19,7 +19,7 @@ bootstrap = Bootstrap(app_instance)  #now booststrap/base.html is available to u
 #is_authenticated, is_active, is_anonymous, get_id
 #but UserMixin can be used so no need to use above functions
 login = LoginManager(app_instance)
-login.login_view = "login" #to force user go to "/login" if not already logged in. -> Use @loggin_required to protect index function.
+login.login_view = "auth.login" #to force user go to "/login" if not already logged in. -> Use @loggin_required to protect index function.
 
 #Blueprints
 
@@ -33,7 +33,11 @@ app_instance.register_blueprint(auth_bp, url_prefix = "/auth")
 #optional
 #we are using url_for() to call view functions of this blueprint (like auth.login),prefix is appended automatically
 
-from app import routes, models
+from app.main import main_bp
+app_instance.register_blueprint(main_bp, url_prefix = "/main")
+
+
+from app import models
 
 
 """
@@ -80,6 +84,22 @@ Organize with Blueprints
 				register.html
 				reset_password.html
 		__init__.py                    <-- register bp
+
+3.Main blueprint
+	app/
+		main/
+			__init__.py        <-- create bp here
+			forms.py
+			routes.py
+		templates/
+			_post.html
+			base.html
+			edit_profile.html
+			index.html
+			user.html
+	
+	__init__.py      <-- register bp here
+
 """
 
 

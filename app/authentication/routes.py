@@ -1,6 +1,6 @@
 from app import app_instance as api
 from flask import render_template, flash, redirect, url_for, request
-from app.forms import LoginForm, RegisterForm, EditProfile, ResetPassword, PostForm
+from app.authentication.forms import LoginForm, RegisterForm, ResetPassword
 from flask_login import current_user, login_user, logout_user, login_required  #manage sessions for user
 from app.models import User, Post
 from app import db
@@ -13,7 +13,7 @@ def login():
 
 	if current_user.is_authenticated:				#current user from flask-login, if it is authenticated not then its anonymous.
 		flash("user already logged in")
-		return redirect(url_for("index"))
+		return redirect(url_for("main.index"))
 
 	form = LoginForm()
 	if form.validate_on_submit():		#fails if user do get request to login page like without clicking submit / or any validation on field fails
@@ -27,7 +27,7 @@ def login():
 															#now current_user variable will point to this user -> and its authenticated
 		print("--------CURRENT USER-- ", current_user)
 		flash("user logged in")
-		return redirect(url_for("index"))
+		return redirect(url_for("main.index"))
 
 	return render_template("authentication/login.html", title = "sign in form", form = form)		#login failed -> try again
 
@@ -43,7 +43,7 @@ def logout():
 def register():
 	#add in db and redirect to index
 	if current_user.is_authenticated:
-		return redirect(url_for("index"))
+		return redirect(url_for("main.index"))
 
 	form = RegisterForm()
 	if form.validate_on_submit():
@@ -63,7 +63,7 @@ def register():
 def reset_password():
 
 	if current_user.is_authenticated:
-		return redirect(url_for("index"))
+		return redirect(url_for("main.index"))
 
 	form = ResetPassword()
 
