@@ -21,7 +21,10 @@ bootstrap = Bootstrap(app_instance)  #now booststrap/base.html is available to u
 login = LoginManager(app_instance)
 login.login_view = "login" #to force user go to "/login" if not already logged in. -> Use @loggin_required to protect index function.
 
-from app import routes, models, errors
+from app.errors import errors_bp
+app_instance.register_blueprint(errors_bp)   #connects view function, templates, static files, error handlers to flask app
+
+from app import routes, models
 
 
 """
@@ -38,5 +41,28 @@ FLASK_ENV=developement
 FLASK_APP=blog.py
 FLASK_DEBUG=1
 """
+
+
+"""
+Organize with Blueprints
+1.Error Handling blueprint
+	
+	app/
+	    errors/                             <-- blueprint package
+	        __init__.py                     <-- blueprint creation
+	        handlers.py                     <-- error handlers
+	    templates/
+	        errors/                         <-- error templates
+	            404.html
+	            500.html
+	    __init__.py                         <-- blueprint registration
+
+
+
+
+"""
+
+
+
 
 

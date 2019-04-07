@@ -24,7 +24,6 @@ def index():					#need to inspect next parameter in login(), as hacker can put p
 		flash("Post submitted")
 		return redirect(url_for("index"))     	#why redirect here, why not stay here only as index is already rendered? 
 												#-> because for form submission POST request always send a web page response so if user refresh browser doesn't send same POST request to submit form.
-
 	#read all posts from db
 	
 	posts = current_user.getAllPosts()
