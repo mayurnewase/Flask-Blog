@@ -70,7 +70,12 @@ def edit_profile():
 	return render_template("edit_profile.html", form = form)
 
 
-
+@bp.route("/user/<name>/popup", methods = ["POST", "GET"])
+@login_required
+def user_popup(name):
+	print("----------popup route hit----------")
+	user = User.query.filter_by(name = name).first_or_404()
+	return render_template("user_popup.html", user = user)
 
 
 

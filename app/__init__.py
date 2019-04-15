@@ -51,7 +51,18 @@ def create_app(config_class = Config):
 
 	return app_instance
 
+"""
+from jinja2 import Environment
+jinja_env = Environment(extensions=['jinja2.ext.i18n'])
+def debug(data):
+	print(data)
+	return ""
+jinja_env.filters["debug"] = debug
+"""
+
 from app import models
+
+
 
 
 """

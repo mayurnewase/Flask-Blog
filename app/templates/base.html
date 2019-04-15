@@ -1,4 +1,7 @@
 {% extends "bootstrap/base.html" %}
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
 {% block title %}
 		{% if title %}
@@ -7,6 +10,8 @@
 		second {{title}}
 		{% endif %}
 {% endblock %}
+
+{{ "Inside script"|pprint }}
 
 {% block navbar %}
 	<nav class = "navbar navbar-default">
@@ -50,9 +55,92 @@
 		{% endif %}
 		{% endwith %}
 
-
-		{% block base_content %} {% endblock %}
-
+		{% block base_content %} {% endblock %}     {# child will fill this only,rest of page will be same #}
 	</div>
-
 {% endblock %}
+
+</div>
+
+
+{% block scripts %}
+{{ super() }}
+
+<script>
+
+$(function (){
+	//this function loads when base loads -> all pages inherit base so if any page loads this function triggers
+	//and assign  .hover property to all user_popup_class elements
+	console.log("Inside bootup function")
+
+	var timer = null;   //delay to popup after placing cursor on username
+	var ajax_op = null;  //ajax return value
+
+	//This is JQuery function to attach hover event on element/collection of element
+	//use element.hover(handleIn, handleOut) for popup
+	//If this function is used on class (here user_popup) it will get attached to all items of that class
+	//args -> cursor on element and cursor moved away
+	$(".user_popup_class").hover(
+
+		function(event){
+
+			console.log("inside mouse on event")
+			//mouse on element event handler
+			var elem = $(event.currentTarget); //save target of event
+			console.log("element is ", elem);
+
+			//Now this will be called on all user_popup class elements(all usernames in defined _post.html template).
+			//How to know which username was hovered -> element store id of element it was hovered.
+			//Make ajax call to /user_popup route with hovername username
+			//cant use url_for in javascript
+			//CAREFULL WITH /user and user/ -> /user/... is absolute path and user/...is relative path from current page
+			console.log("trimmed route to hit for ajax ", "user/" + elem.first().text().trim() + "/popup")
+			
+			ajax_op = $.ajax("/main/user/" + elem.first().text().trim() + "/popup").done(
+				function(data){
+					//got data from ajax call
+					ajax_op = null
+
+					//display popup here
+					elem.popover(
+						{
+							trigger : "manual",
+							html : true,
+							animation : false,
+							container : elem,
+							content : data
+						}
+					).popover('show');
+				}
+			);
+		},
+		function(event){
+
+			console.log("inside mouse out event")
+			//mouse out of element event handler
+			var elem = $(event.currentTarget);
+			if(ajax_op){
+				ajax_op.abort();  //if ajax call initiated abort it
+				ajax_op=null;
+			}
+			else{
+				//destroy popup if it was shown
+				elem.popover("destroy");
+			}
+		}
+	)
+});
+
+</script>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+

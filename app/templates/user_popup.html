@@ -1,0 +1,11 @@
+
+<h3> User : {{ user.name }} </h3>
+<p>About: {{ user.about_me }}</p>
+<p>Last seen : {{ user.last_seen }} </p>
+
+<hr>
+{% for post in posts %}
+
+{% include "_post.html" %}
+
+{% endfor %}
