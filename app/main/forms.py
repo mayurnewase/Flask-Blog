@@ -13,7 +13,9 @@ class PostForm(FlaskForm):
 	post = TextAreaField("Your Opinion..", validators=[DataRequired(), Length(min=1, max=140)])
 	submit = SubmitField("Post it")
 
-
+class MesssageForm(FlaskForm):
+	message = TextAreaField("message..", validators = [DataRequired(), Length(min = 1, max = 140)])
+	submit = SubmitField("Send it")
 
 
 

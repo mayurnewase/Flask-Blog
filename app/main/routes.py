@@ -1,8 +1,8 @@
 from app.main import main_bp as bp
-from flask import render_template, flash, redirect, url_for, request
-from app.main.forms import  EditProfile, PostForm
+from flask import render_template, flash, redirect, url_for, request, jsonify
+from app.main.forms import  EditProfile, PostForm, MesssageForm
 from flask_login import current_user, login_user, logout_user, login_required  #manage sessions for user
-from app.models import User, Post
+from app.models import User, Post, Message, Notification
 from app import db
 from datetime import datetime
 
@@ -76,6 +76,85 @@ def user_popup(name):
 	print("----------popup route hit----------")
 	user = User.query.filter_by(name = name).first_or_404()
 	return render_template("user_popup.html", user = user)
+
+
+@bp.route("/send_message/<reciever>", methods =["POST", "GET"])
+@login_required
+def send_message(reciever):
+
+	#inputs reciever name
+	#get its object to pass in message table
+
+	reciever_obj = User.query.filter_by(name = reciever).first_or_404()
+	form  = MesssageForm()
+
+	if form.validate_on_submit():
+		print("----message sent-----")
+
+		msg = Message(author = current_user, reciever = reciever_obj, body = form.message.data)
+		db.session.add(msg)
+		current_user.addNotification(notification_name = "unread_message",data = current_user.getMessagesCount())
+		print(f"messages for {current_user.name} {current_user.getMessagesCount()}")
+		db.session.commit()
+		print(f"messages for {reciever_obj.name} {reciever_obj.getMessagesCount()}")
+
+		flash("message sent successfully")
+
+		return redirect(url_for("main.user", name = reciever))
+
+	return render_template("send_message.html", form = form)
+
+
+@bp.route("/read_message", methods = ["POST", "GET"])
+@login_required
+def read_message():
+
+	#when user click on message badge
+	#change last message checked to current time
+
+	current_user.last_message_read_time = datetime.utcnow()
+	current_user.addNotification(notification_name = "unread_message", data = 0)
+	db.session.commit()
+
+	messages_recieved_by_user = current_user.messages_recieved.order_by(Message.timestamp.desc())
+
+	return render_template("read_message.html", messages = messages_recieved_by_user)
+
+
+@bp.route("/notification_polling", methods = ["POST", "GET"])
+@login_required	
+def notification_polling():
+	#client's browser will hit this route periodically for requesting latest notifications
+	#server will query db for user's notifications and return a json response
+	#to send only latest notifications
+	since_parameter = request.args.get("since", 0.0, type = float)  #get since from url that client use to hit this route.if not found in url use 0 by default
+
+	#send notifications ordered in old to new
+	new_notifications = current_user.notifications.filter(Notification.timestamp > since_parameter).order_by(Notification.timestamp.asc())
+
+	noti = [{"notification_name" : noti.notification_name, "data" : noti.get_data(), "timestamp" : noti.timestamp} for noti in new_notifications]
+	noti = jsonify(noti)
+
+	print(f"--------------client polling route hit for {current_user.name}  {noti}-------------")
+
+	return noti
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

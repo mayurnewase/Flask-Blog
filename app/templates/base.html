@@ -1,7 +1,5 @@
 {% extends "bootstrap/base.html" %}
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
 
 {% block title %}
 		{% if title %}
@@ -39,6 +37,28 @@
 					<li><a href="{{ url_for('auth.register') }}">Register</a></li>
 					<li><a href="{{ url_for('main.user', name=current_user.name) }}">Profile</a></li>
 					<li><a href="{{ url_for('main.edit_profile') }}">Edit profile</a></li>
+
+					{% if current_user.is_anonymous %}
+					<!-- Dont show messages.Dont know how to do with == false in jinja in above if -->
+					<!-- can't call getMessagesCount on anonymous user -> thorows error -->
+					{% else %}
+						<li>
+							<a href="{{ url_for('main.read_message') }}"> Messages 
+								{% set new_messages = current_user.getMessagesCount() %}   <!-- call User function to get unread messages -->
+
+								<!-- here simply new messages can be shown,but they will static -->
+								<!-- means they will refresh only when new page is loaded/refrashed -->
+								<!-- but using js we can make them dynamic -->
+								<!-- id is given for js function to modify its properties -->
+
+								<span id="message_badge" class = "badge badge-danger"
+									style="visibility: {% if new_messages %} visible
+														{% else %}hidden
+														{% endif %} " >
+								 {{ new_messages }} </span>  <!--uses the badge class from bootstrap -->
+							</a>
+						</li>
+					{% endif %}
 				</ul>
 			</div>
 		</div>
@@ -67,8 +87,47 @@
 
 <script>
 
+//function to load message count dynamically
+//this function will be called by server to update unread messages
+//2 methods for server to change this dynamically.client will call this method to change it dynamically after getting response from server
+//1.client can send request server periodically -> using this method now
+//2.server and client use websocket -> has permanant connection -> inefficient coz 4 process can have only 4 clients.
+function set_message_count(n){
+	$('#message_badge').text(n);
+	$('#message_badge').css("visibility", n ? "visible" : "hidden")
+}
+
+
+{% if current_user.is_authenticated %}
+	$(function (){
+		//function to poll latest notifications periodically for 10 second for current user
+		//this will hit notification_polling() on server which will give json
+		//only if user is logged in
+		//use ajax call and get list of dictionaries {noti_name,data,timestamp}
+		//call set_message_count to update new messages
+		var since = 0;
+		setInterval(
+			function(){
+				$.ajax("{{ url_for('main.notification_polling') }}?since=" + since).done(
+					function(notifications){
+						console.log("hitting polling route for {{ current_user.name }} got ", notifications.length);
+						for(var i = 0; i< notifications.length; i++){
+							console.log(notifications[i].data)
+							if(notifications[i].notification_name == "unread_message"){
+								set_message_count(notifications[i].data);
+								since = notifications[i].timestamp;
+							}
+						}
+					}
+				);
+			},
+		5000);
+	});
+{% endif %}
+
+
 $(function (){
-	//this function loads when base loads -> all pages inherit base so if any page loads this function triggers
+	//this jquery function loads when base loads -> all pages inherit base so if any page loads this function triggers
 	//and assign  .hover property to all user_popup_class elements
 	console.log("Inside bootup function")
 

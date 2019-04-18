@@ -1,5 +1,5 @@
 from app import db, mail
-from app.models import User, Post
+from app.models import User, Post, Message, Notification
 from app import create_app       #application factory
 
 app_instance = create_app()
@@ -8,5 +8,5 @@ app_instance = create_app()
 #now if flask shell is used those will be preimported ...
 @app_instance.shell_context_processor
 def make_shell_context():
-	return {"db": db, "User": User, "Post": Post, "mail":mail}
+	return {"db": db, "User": User, "Post": Post, "mail":mail, "Notification":Notification, "Message": Message}
 
