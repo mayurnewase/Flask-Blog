@@ -7,6 +7,8 @@ from flask_login import LoginManager
 from flask_mail import Mail
 from flask_bootstrap import Bootstrap
 
+from redis import Redis
+import rq
 
 #initialize empty flask extensions and initialize after app is made
 db = SQLAlchemy()  #take app_instance
@@ -48,6 +50,10 @@ def create_app(config_class = Config):
 
 	from app.main import main_bp
 	app_instance.register_blueprint(main_bp, url_prefix = "/main")
+
+	#bind redis queue to app so we can access current_app.task_queue
+	app.redis = Redis.from_url(app.config["REDIS_URL"])
+	app.task_queue = rq.Queue(app.config["REDIS_QUEUE"], connection = app.redis)
 
 	return app_instance
 
@@ -136,6 +142,15 @@ Organize with Blueprints
 			user.html
 	
 	__init__.py      <-- register bp here
+
+-------------------------------------------
+adding background tasks with rq
+	collect all posts
+	send it to user via mail
+
+	also add support to send mail in foreground for background task
+
+
 
 """
 

@@ -1,0 +1,22 @@
+>>> from redis import Redis
+>>> import rq
+>>> queue = rq.Queue('microblog-tasks', connection=Redis.from_url('redis://'))
+>>> job = queue.enqueue('app.tasks.example', 23)
+>>> job.get_id()
+'c651de7f-21a8-4068-afd5-8b982a6f6d32'
+
+
+>>> job = queue.enqueue('app.tasks.example', 23)
+>>> job.meta
+{}
+>>> job.refresh()
+>>> job.meta
+{'progress': 13.043478260869565}
+>>> job.refresh()
+>>> job.meta
+{'progress': 69.56521739130434}
+>>> job.refresh()
+>>> job.meta
+{'progress': 100}
+>>> job.is_finished
+True

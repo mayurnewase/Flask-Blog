@@ -7,6 +7,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from app import login #from init.py -> instance of flask login
 import time
 import json
+import rq
+import redis
 
 class User(UserMixin, db.Model):
 	id = db.Column(db.Integer, primary_key = True)
@@ -31,6 +33,9 @@ class User(UserMixin, db.Model):
 
 	#to read notifications for user from db -> user_object.notifications
 	notifications = db.relationship("Notification", backref = "user", lazy = "dynamic")
+
+	#to create background tasks for specific user
+	tasks = db.relationship("Task", backref = "user", lazy = "dynamic")
 
 	def set_password(self, password):
 		#helper for hashing
@@ -65,6 +70,33 @@ class User(UserMixin, db.Model):
 		#db.session.commit()
 		return n
 
+	def launchTask(self, function_name, description, *args, **kwargs):
+		#add task in queue
+		#add in task table
+		#dont commit yet,will be done by background process -> don't know WHY
+
+		#now start any task specified by function name from task.py
+		#here specifying id as user_id, if not specified some random id will be used by rq
+		rq_job = current_app.task_queue.enqueue("app.tasks." + function_name, job_id = self.id, *args, **kwargs)
+		#create task object -> see how we are giving user attribute and not user_id
+		task = Task(id = rq.get_id(), name = function_name, description = task_description, user = self)
+		db.session.add(task)
+		return task
+
+	def getTasksInProgress(self):
+		#get all tasks for user in progress from db
+		#filter by user
+
+		all_tasks = Task.query.filter_by(user = self, complete = False).all()
+		return all_tasks
+
+	def getFirstTaskProgress(self, function_name):
+		#get single task progress
+		#used to prevent users running 2 same tasks
+		#filter by function name
+
+		first_task = Task.query.filter_by(name = function_name, user = self, complete = False).first()
+		return first_task
 
 class Post(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
@@ -92,6 +124,26 @@ class Notification(db.Model):
 		#for json deserialization
 		return json.loads(str(self.json_payload))
 
+
+
+class Task(db.Model):
+	id = db.Column(db.String(36), primary_key = True)  #job id from redis queue
+	name = db.Column(db.String(128), index = True)   #funciotn name which is executed in background
+	description = db.Column(db.String(128))   #to display in alert
+	user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+	complete = db.Column(db.Boolean, default = False)
+
+	def get_rq_job(self):
+		#fetch job object from rq given id, redis_server_url
+		try:
+			rq_job = rq.job.Job.fetch(self.id, connection = current_app.redis)
+		except(redis.exceptions.RedisError, rq.exceptions.NoSuchJobError):
+			return None
+		return rq_job
+
+	def get_progress(self):
+		job = self.get_rq_job()
+		progress = job.meta.get("progress", 0) if job is not None else 100
 
 @login.user_loader  #for flask-login
 def load_user(id):

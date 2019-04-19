@@ -94,9 +94,9 @@ def send_message(reciever):
 		msg = Message(author = current_user, reciever = reciever_obj, body = form.message.data)
 		db.session.add(msg)
 		current_user.addNotification(notification_name = "unread_message",data = current_user.getMessagesCount())
-		print(f"messages for {current_user.name} {current_user.getMessagesCount()}")
+		#print(f"messages for {current_user.name} {current_user.getMessagesCount()}")
 		db.session.commit()
-		print(f"messages for {reciever_obj.name} {reciever_obj.getMessagesCount()}")
+		#print(f"messages for {reciever_obj.name} {reciever_obj.getMessagesCount()}")
 
 		flash("message sent successfully")
 
@@ -135,7 +135,7 @@ def notification_polling():
 	noti = [{"notification_name" : noti.notification_name, "data" : noti.get_data(), "timestamp" : noti.timestamp} for noti in new_notifications]
 	noti = jsonify(noti)
 
-	print(f"--------------client polling route hit for {current_user.name}  {noti}-------------")
+	#print(f"--------------client polling route hit for {current_user.name}  {noti}-------------")
 
 	return noti
 
