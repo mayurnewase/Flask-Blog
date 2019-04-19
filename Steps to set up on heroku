@@ -18,3 +18,24 @@ Deploy
 		flask db upgrade
 	
 	git push heroku master
+
+connect to postgress database
+	heroku pg:psql
+
+run bash/python on heroku for app
+	heroku run python/bash
+
+-----------------------------------------------------------------------------------------
+
+Steps to use redis server and queue
+start server by nohup redis-server &
+then rq worker rq worker microblog-tasks
+
+----------------------------------------------------------------------------------------
+
+
+
+
+
+
+

@@ -8,6 +8,8 @@
 	<p>
 		<a href="{{ url_for('main.send_message', reciever = user.name ) }}">Send Message </a>
 	</p>
+	<p> <a href="{{ url_for(main.export_posts) }}"> export posts </a> </p>
+
 	<hr>
 	{% for post in posts %}
 	
