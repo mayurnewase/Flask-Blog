@@ -52,8 +52,8 @@ def create_app(config_class = Config):
 	app_instance.register_blueprint(main_bp, url_prefix = "/main")
 
 	#bind redis queue to app so we can access current_app.task_queue
-	app.redis = Redis.from_url(app.config["REDIS_URL"])
-	app.task_queue = rq.Queue(app.config["REDIS_QUEUE"], connection = app.redis)
+	app_instance.redis = Redis.from_url(app_instance.config["REDIS_URL"])
+	app_instance.task_queue = rq.Queue(app_instance.config["REDIS_QUEUE"], connection = app_instance.redis)
 
 	return app_instance
 
@@ -150,8 +150,10 @@ adding background tasks with rq
 
 	also add support to send mail in foreground for background task
 
-
-
+	steps:
+		restart redis -> sudo systemctl restart redis-server
+		run redis worker -> rq worker microblog-tasks
+		run app -> flask run
 """
 
 

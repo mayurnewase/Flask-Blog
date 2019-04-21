@@ -9,6 +9,7 @@ import time
 import json
 import rq
 import redis
+from flask import current_app
 
 class User(UserMixin, db.Model):
 	id = db.Column(db.Integer, primary_key = True)
@@ -70,16 +71,18 @@ class User(UserMixin, db.Model):
 		#db.session.commit()
 		return n
 
-	def launchTask(self, function_name, description, *args, **kwargs):
-		#add task in queue
+	def launchTask(self, function_name, task_description, *args, **kwargs):
+		#add task in task_queue
 		#add in task table
 		#dont commit yet,will be done by background process -> don't know WHY
 
 		#now start any task specified by function name from task.py
 		#here specifying id as user_id, if not specified some random id will be used by rq
-		rq_job = current_app.task_queue.enqueue("app.tasks." + function_name, job_id = self.id, *args, **kwargs)
+		#self.id is passed to export_posts as user_id
+		rq_job = current_app.task_queue.enqueue("app.tasks." + function_name, self.id, *args, **kwargs)
+		print("Job queued ", rq_job, current_app.task_queue)
 		#create task object -> see how we are giving user attribute and not user_id
-		task = Task(id = rq.get_id(), name = function_name, description = task_description, user = self)
+		task = Task(id = rq_job.get_id(), name = function_name, description = task_description, user = self)
 		db.session.add(task)
 		return task
 
@@ -144,6 +147,7 @@ class Task(db.Model):
 	def get_progress(self):
 		job = self.get_rq_job()
 		progress = job.meta.get("progress", 0) if job is not None else 100
+		return progress
 
 @login.user_loader  #for flask-login
 def load_user(id):

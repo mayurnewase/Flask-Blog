@@ -140,6 +140,17 @@ def notification_polling():
 	return noti
 
 
+@bp.route("/export_posts", methods = ["POST", "GET"])
+@login_required	
+def export_posts():
+
+	if current_user.getFirstTaskProgress("export_posts"):
+		flash("Task already in progress")
+	else:
+		current_user.launchTask(function_name = "export_posts", task_description = "exporting posts...")
+		db.session.commit()
+
+	return redirect(url_for("main.user", name = current_user.name))
 
 
 

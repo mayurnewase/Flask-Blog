@@ -24,11 +24,11 @@ class Config(object):
 
 	LOG_TO_STDOUT = os.environ.get("LOG_TO_STDOUT")    #Not used currentlt as I did not create support for logging
 
-	REDIS_URL = os.environment.get('REDIS_URL') or "redis://"  #if url not give,assume servie is on same host with default port
-	REDIS_QUEUE = os.environment.get("REDIS_QUEUE") or "worker-task"
+	REDIS_URL = os.environ.get('REDIS_URL') or "redis://"  #if url not give,assume servie is on same host with default port
+	REDIS_QUEUE = os.environ.get("REDIS_QUEUE") or "first-worker"
 
 	"""
-	to start local server
+	to start local email server
 	python -m smtpd -n -c DebuggingServer localhost:8025
 
 	for google

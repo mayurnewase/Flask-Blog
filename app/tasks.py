@@ -18,16 +18,14 @@ from rq import get_current_job
 from app.models import User, Post, Task
 from app.email import send_mail
 
+import sys
 import json
 import sys
 import time
 from flask import render_template
 
-
-
-app = create_app()
-
-app.app_context().push()
+exporter_app = create_app()
+exporter_app.app_context().push()
 
 def _set_task_progress(progress):
 	#used to upfate progress of currently executig task and update progress in db
@@ -40,9 +38,10 @@ def _set_task_progress(progress):
 		job.save_meta()
 		task = Task.query.get(job.get_id())   #get object of that job form id
 												#why get not filter().first()
-		task.user.add_notification("task_progress", {"task_id": job.get_id(), "progress" : progress})
+		task.user.addNotification("task_progress", {"task_id": job.get_id(), "progress" : progress})
 
 		if progress > 100:
+			print("------Task complete")
 			task.complete = True
 
 		db.session.commit()   #this will commit and not main app
@@ -55,21 +54,42 @@ def export_posts(user_id):
 
 	try:
 
-		user = User.query.get(user_id)
+		print("-------worker got user id ",user_id)
+		user = User.query.get(user_id)    #WHY GET,WHY NOT FILTER_BY().FIRST()
 		_set_task_progress(0)
 		data = []
 		i = 0
-
 		total_posts = user.posts.count()   #WHAT IS COUNT HERE ?
 
+		for index, post in enumerate(user.posts.order_by(Post.timestamp.asc())):
+			data.append({"body" : post.body, "timestamp" : post.timestamp.isoformat()})
+
+			time.sleep(5)
+			_set_task_progress((i / total_posts) * 100)
+			print("----WORKER IS WORKING-----")
+
+		print("-----data creation complete")
+		
+		print("exporter_app config \n", exporter_app.config["ADMINS"][0],user, [user.mail])
+		send_mail(subject = "blogs exporter", 
+			sender = exporter_app.config["ADMINS"][0],
+			reciever = [user.mail],
+			text = "Posts are exporterd",
+			html = None,
+			attachments = [json.dumps({"posts": data}, indent = 4)],
+			sync = True)   #send in foreground
+		#(subject, sender, reciever, text, html, attachments = None, sync = False)
+		print("----mail sent")
+
 	except:
-		#call app logging module
-
-
-
-
-
-
+		#call app logging module -> currently not defined
+		#but if error happens here flask wont tell you
+		#you will only know if you are watching task terminal constantly
+		_set_task_progress(100)
+		Task.query.delete()
+		db.session.commit()
+		print("--------Exception caught, clearing Task table")
+		print(sys.exc_info()[0])
 
 
 

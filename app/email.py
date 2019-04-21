@@ -8,20 +8,24 @@ def send_async_mail(app_instance, msg):
 		mail.send(msg)
 
 
-def send_mail(subject, sender, reciever, text, html, attatchments = None, sync = False):
+def send_mail(subject, sender, reciever, text, html, attachments = None, sync = False):
 	msg = Message(subject, sender=sender, recipients=reciever)
 	msg.body = text
 	msg.html = html
+	print("-----mailing")
 	
-	if attatchments:
-		#attachment will contain  filename, media type, file data -> used to export posts
-		for att in attachments:
-			msg.attach(*att)   #att wil be tuple of above values -> * will expand it in 3 parameters
-	
+	"""
+		if attachments:
+			#attachment will contain  filename, media type, file data -> used to export posts
+			for att in attachments:
+				msg.attach(att)   #att wil be tuple of above values -> * will expand it in 3 parameters
+	"""	
 	if sync:
 		#send in foreground
 		#used by background task
+		print("-----sending in sync")
 		mail.send(msg)
+		print("----sent")
 
 	else:
 		#send in other thread

@@ -66,7 +66,23 @@
 {% endblock %}
 
 {% block content %}
-	<div class="containert">
+	 <div class="containert">
+	<!-- for export posts alert -->
+	<!-- same as flashed messages but we are not flashing prgress bar here. -->
+	 	{% if current_user.is_authenticated %}
+	 		{% with tasks = current_user.getTasksInProgress()  %}
+		 		{% if tasks %}
+		 			{% for task in task %}
+		 				<div class="alert alert-success" role = "alert">
+		 					{{ task.description }}
+		 					<span id="{{ task.id }}-progress">{{ task.get_progress() }}</span>
+		 				</div>
+		 			{% endfor %}
+		 		{% endif %}
+		 	{% endwith %}
+	 	{% endif %}
+
+	 	<!-- for flashed messages -->
 		{% with messages = get_flashed_messages() %}
 		{% if messages %}
 			{% for message in messages %}
@@ -78,8 +94,6 @@
 		{% block base_content %} {% endblock %}     {# child will fill this only,rest of page will be same #}
 	</div>
 {% endblock %}
-
-</div>
 
 
 {% block scripts %}
@@ -93,13 +107,21 @@
 //1.client can send request server periodically -> using this method now
 //2.server and client use websocket -> has permanant connection -> inefficient coz 4 process can have only 4 clients.
 function set_message_count(n){
+	//called by polling function below
 	$('#message_badge').text(n);
 	$('#message_badge').css("visibility", n ? "visible" : "hidden")
+}
+
+function set_task_progress(task_id, progress){
+	//called by polling function below
+	console.log("task progress "+ progress)
+	$("#" + task_id + "-progress").text(progress);
 }
 
 
 {% if current_user.is_authenticated %}
 	$(function (){
+		//generic fucntion to poll for all kinds of notifications
 		//function to poll latest notifications periodically for 10 second for current user
 		//this will hit notification_polling() on server which will give json
 		//only if user is logged in
@@ -112,16 +134,20 @@ function set_message_count(n){
 					function(notifications){
 						console.log("hitting polling route for {{ current_user.name }} got ", notifications.length);
 						for(var i = 0; i< notifications.length; i++){
-							console.log(notifications[i].data)
+							
 							if(notifications[i].notification_name == "unread_message"){
 								set_message_count(notifications[i].data);
-								since = notifications[i].timestamp;
 							}
+							else if(notifications[i].notification_name == "task_progress"){
+								set_task_progress(notifications[i].data.task_id, notifications[i].data.progress);
+							}
+							console.log("notification names found " + notifications[i].notification_name);
+							since = notifications[i].timestamp;
 						}
 					}
 				);
 			},
-		5000);
+		10000);
 	});
 {% endif %}
 
