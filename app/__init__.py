@@ -68,9 +68,6 @@ jinja_env.filters["debug"] = debug
 
 from app import models
 
-
-
-
 """
 To add form
 1.Form fields and validators in forms.py

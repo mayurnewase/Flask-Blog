@@ -72,7 +72,7 @@
 	 	{% if current_user.is_authenticated %}
 	 		{% with tasks = current_user.getTasksInProgress()  %}
 		 		{% if tasks %}
-		 			{% for task in task %}
+		 			{% for task in tasks %}
 		 				<div class="alert alert-success" role = "alert">
 		 					{{ task.description }}
 		 					<span id="{{ task.id }}-progress">{{ task.get_progress() }}</span>
@@ -109,12 +109,12 @@
 function set_message_count(n){
 	//called by polling function below
 	$('#message_badge').text(n);
-	$('#message_badge').css("visibility", n ? "visible" : "hidden")
+	$('#message_badge').css("visibility", n ? "visible" : "hidden");
 }
 
 function set_task_progress(task_id, progress){
 	//called by polling function below
-	console.log("task progress "+ progress)
+	console.log("task progress "+ progress + " calling function to set flash");
 	$("#" + task_id + "-progress").text(progress);
 }
 
@@ -142,12 +142,12 @@ function set_task_progress(task_id, progress){
 								set_task_progress(notifications[i].data.task_id, notifications[i].data.progress);
 							}
 							console.log("notification names found " + notifications[i].notification_name);
-							since = notifications[i].timestamp;
+							//since = notifications[i].timestamp;
 						}
 					}
 				);
 			},
-		10000);
+		1000);
 	});
 {% endif %}
 

@@ -15,7 +15,7 @@ class Config(object):
 	SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 	MAIL_SERVER=os.environ.get("MAIL_SERVER")
-	MAIL_PORT=os.environ.get("MAIL_PORT")
+	MAIL_PORT=int(os.environ.get("MAIL_PORT"))
 	MAIL_USE_TLS = None
 	ADMINS = ['admin@gmail.com']
 

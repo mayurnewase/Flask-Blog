@@ -39,8 +39,9 @@ def _set_task_progress(progress):
 		task = Task.query.get(job.get_id())   #get object of that job form id
 												#why get not filter().first()
 		task.user.addNotification("task_progress", {"task_id": job.get_id(), "progress" : progress})
-
-		if progress > 100:
+		print("-----current progress ", progress)
+		
+		if progress == 100:
 			print("------Task complete")
 			task.complete = True
 
@@ -51,23 +52,24 @@ def export_posts(user_id):
 	#read user posts
 	#send email with data
 	#handle errors
-
+	print("------------------Starting task-------------------")
 	try:
 
 		print("-------worker got user id ",user_id)
 		user = User.query.get(user_id)    #WHY GET,WHY NOT FILTER_BY().FIRST()
 		_set_task_progress(0)
 		data = []
-		i = 0
+		index = 1
 		total_posts = user.posts.count()   #WHAT IS COUNT HERE ?
 
-		for index, post in enumerate(user.posts.order_by(Post.timestamp.asc())):
+		for post in user.posts.order_by(Post.timestamp.asc()):
 			data.append({"body" : post.body, "timestamp" : post.timestamp.isoformat()})
 
-			time.sleep(5)
-			_set_task_progress((i / total_posts) * 100)
+			_set_task_progress((index / total_posts) * 100)
 			print("----WORKER IS WORKING-----")
-
+			time.sleep(10)
+			index+=1
+			
 		print("-----data creation complete")
 		
 		print("exporter_app config \n", exporter_app.config["ADMINS"][0],user, [user.mail])

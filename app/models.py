@@ -96,7 +96,7 @@ class User(UserMixin, db.Model):
 	def getFirstTaskProgress(self, function_name):
 		#get single task progress
 		#used to prevent users running 2 same tasks
-		#filter by function name
+		#filter by function name and user and complete
 
 		first_task = Task.query.filter_by(name = function_name, user = self, complete = False).first()
 		return first_task
