@@ -9,7 +9,7 @@ import time
 import json
 import rq
 import redis
-from flask import current_app
+from flask import current_app, url_for
 
 class User(UserMixin, db.Model):
 	id = db.Column(db.Integer, primary_key = True)
@@ -100,6 +100,36 @@ class User(UserMixin, db.Model):
 
 		first_task = Task.query.filter_by(name = function_name, user = self, complete = False).first()
 		return first_task
+
+
+	def to_dict(self, include_mail = False):
+		#For api -> return a python dictionary which is then converterd to json
+
+		data = {
+			"id" : self.id,
+			"name" : self.name,
+			"last_seen" : self.last_seen,
+			"about_me" : self.about_me,
+			"post_count" : self.posts.count(),
+			"_links": {
+				"self" : url_for("api.get_user", id = self.id)
+			}
+		}
+
+		if include_mail:
+			data["mail"] = self.mail
+
+		return data
+
+	def from_dict(self, data, new_user = False):
+		#for api -> take json and set current user attribures according to that
+		for field in ["name", "mail"]:
+			if field in data:
+				setattr(self, field, data[field])
+			if new_user and "password" in data:
+				self.set_password(data["password"])
+
+
 
 class Post(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
