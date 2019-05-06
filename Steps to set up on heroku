@@ -19,8 +19,15 @@ Deploy
 	
 	git push heroku master
 
+--------------------------------------------------------------------------
+
 connect to postgress database
 	heroku pg:psql
+
+see tables in postgresql
+	\dt;
+drop tables 
+	drop table <name>
 
 run bash/python on heroku for app
 	heroku run python/bash
