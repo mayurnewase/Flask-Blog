@@ -28,11 +28,12 @@ run bash/python on heroku for app
 -----------------------------------------------------------------------------------------
 
 Steps to use redis server and queue
-start server by nohup redis-server &
-then rq worker rq worker microblog-tasks
+	start server by nohup redis-server &
+	then rq worker rq worker microblog-tasks
 
 ----------------------------------------------------------------------------------------
-
+Steps to use worker:
+	Add worker command in procfile
 
 
 
