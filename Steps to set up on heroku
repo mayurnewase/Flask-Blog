@@ -35,7 +35,9 @@ Steps to use redis server and queue
 Steps to use worker:
 	Add worker command in procfile
 
-
+---------------------------------------------------------
+Check logs from cli:
+	heroku logs
 
 
 
